@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Deteksi Kesehatan Mental</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-brand">MentalCheck</div>
+        <ul class="nav-links">
+        <li><a href="{{ url_for('home') }}">Beranda</a></li>
+        <li><a href="{{ url_for('index') }}">Deteksi</a></li>
+        <li><a href="{{ url_for('about') }}">About</a></li>
+        </ul>
+    </nav>
+    <div class="container">
+        <h2>Cek Kesehatan Mental Mahasiswa</h2>
+        <!-- Tambahkan di atas <form> -->
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        {% set questions = [
+            'Apakah Anda merasa tertekan saat menghadapi tugas dan ujian dalam waktu bersamaan?',
+            'Apakah Anda merasa cukup tidur dan beristirahat selama masa perkuliahan?',
+            'Seberapa sering Anda merasa malas atau tidak termotivasi mengikuti perkuliahan?',
+            'Apakah Anda merasa nyaman berbicara tentang masalah pribadi kepada orang terdekat?',
+            'Seberapa sering Anda merasa sedih atau tidak bersemangat tanpa alasan yang jelas?',
+            'Apakah Anda pernah merasa kelelahan secara mental meskipun tidak banyak aktivitas fisik?',
+            'Apakah Anda merasa dikejar ekspektasi tinggi dari orang tua atau lingkungan?'
+        ] %}
+
+        {% set options_list = [
+            ['Saya merasa tenang dan bisa mengatur waktu dengan baik', 'Saya merasa sedikit tertekan tapi masih bisa mengatasinya', 'Saya sering merasa sangat stres dan bingung harus mulai dari mana', 'Saya merasa sangat kewalahan hingga tidak ingin mengerjakannya sama sekali'],
+            ['Saya tidur cukup dan merasa segar saat bangun', 'Saya kadang tidur larut tapi masih merasa cukup segar', 'Saya sering tidur larut dan bangun dalam kondisi lelah', 'Saya hampir tidak pernah tidur cukup dan merasa sangat kelelahan'],
+            ['Saya selalu termotivasi dan aktif dalam perkuliahan', 'Saya kadang merasa malas, tapi tetap berusaha mengikuti', 'Saya sering merasa tidak bersemangat untuk kuliah', 'Saya hampir tidak punya motivasi dan sering absen'],
+            ['Saya sangat terbuka dan sering berbagi cerita', 'Saya kadang berbagi jika merasa perlu', 'Saya jarang menceritakan masalah saya ke siapa pun', 'Saya merasa tidak ada orang yang bisa saya ajak bicara'],
+            ['Saya hampir tidak pernah merasa seperti itu', 'Saya kadang merasa sedih, tapi cepat pulih', 'Saya sering merasa sedih tanpa alasan', 'Saya hampir setiap hari merasa tidak bersemangat'],
+            ['Saya merasa segar dan tidak mengalami kelelahan mental', 'Saya kadang merasa lelah secara mental, tapi bisa pulih', 'Saya sering merasa kelelahan mental dan susah fokus', 'Saya merasa terus-menerus lelah dan tidak berenergi'],
+            ['Ekspektasi mereka memotivasi saya untuk berkembang', 'Kadang saya merasa tertekan, tapi tetap berusaha', 'Saya sering merasa tidak sanggup memenuhi harapan', 'Saya merasa hidup saya hanya untuk memenuhi tuntutan']
+        ] %}
+
+            <form id="quizForm" method="post">
+                {% for i in range(7) %}
+                {% set display = "block" if i == 0 else "none" %}
+                {% if hasil %}
+                    {% set display = "block" if i == 6 else "none" %}
+                {% endif %}
+                <div class="form-step" style="display:{{ display }}">
+                    <h3>{{ questions[i] }}</h3>
+
+                    <p class="error-message" style="color:red; display:none;">* Silakan pilih salah satu jawaban terlebih dahulu</p>
+
+                    <div class="option-grid">
+                        {% for j in range(4) %}
+                        <label class="custom-radio">
+                            <input type="radio" name="q{{ i+1 }}" value="{{ j+1 }}">
+                            <span>{{ options_list[i][j] }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+
+                    <div class="form-navigation">
+                        {% if i > 0 %}
+                        <button type="button" class="prev-btn">Sebelumnya</button>
+                        {% endif %}
+                        {% if i < 6 %}
+                        <button type="button" class="next-btn">Berikutnya</button>
+                        {% else %}
+                        <button type="submit">Lihat Hasil</button>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </form>
+
+            {% if hasil %}
+            <div class="form-step" style="display:block;">
+                <div class="result" style="margin-top: 2rem;">
+                    <h3>Hasil Klasifikasi</h3>
+                    <p><strong>Skor Defuzzifikasi:</strong> {{ "%.2f"|format(skor) }}</p>
+                    <p><strong>Kategori:</strong> {{ kategori }}</p>
+                    <a href="{{ url_for('index') }}" class="retry-btn">Coba Lagi</a>
+                </div>
+            </div>
+            {% endif %}
+    </div>
+    
+    <script>
+    const steps = document.querySelectorAll('.form-step');
+    const progressBar = document.getElementById('progressBar');
+
+    // Deklarasi currentStep duluan
+    let currentStep = 0;
+
+    // Jika hasil tersedia, langsung ke step terakhir
+    {% if hasil %}
+    currentStep = steps.length - 1;
+    {% endif %}
+
+    // Fungsi menampilkan step tertentu
+    function showStep(index) {
+        steps.forEach((step, i) => {
+            step.style.display = i === index ? 'block' : 'none';
+            const warning = step.querySelector('.warning');
+            if (warning) warning.remove();
+        });
+        const maxProgressSteps = 7; // hanya untuk 7 pertanyaan
+        progressBar.style.width = (Math.min(index, maxProgressSteps) / maxProgressSteps) * 100 + '%';
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Panggil inisialisasi pertama
+    showStep(currentStep);
+
+    // Tombol berikutnya
+    document.querySelectorAll('.next-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (validateStep(currentStep)) {
+                currentStep++;
+                showStep(currentStep);
+            } else {
+                showWarning(currentStep, "Silakan pilih salah satu jawaban terlebih dahulu.");
+            }
+        });
+    });
+
+    // Tombol sebelumnya
+    document.querySelectorAll('.prev-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            currentStep--;
+            showStep(currentStep);
+        });
+    });
+
+    // Validasi jawaban
+    function validateStep(stepIndex) {
+        const radios = steps[stepIndex].querySelectorAll('input[type="radio"]');
+        return [...radios].some(radio => radio.checked);
+    }
+
+    // Menampilkan pesan warning jika belum memilih
+    function showWarning(stepIndex, message) {
+        const step = steps[stepIndex];
+        const existing = step.querySelector('.warning');
+        if (existing) existing.remove();
+
+        const warning = document.createElement('div');
+        warning.className = 'warning';
+        warning.innerText = message;
+        step.appendChild(warning);
+    }
+    </script>
+
+
+
+</body>
+
+</html>

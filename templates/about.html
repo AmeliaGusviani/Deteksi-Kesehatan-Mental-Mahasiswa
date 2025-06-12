@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Tentang Sistem</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-brand">MentalCheck</div>
+        <ul class="nav-links">
+        <li><a href="{{ url_for('home') }}">Beranda</a></li>
+        <li><a href="{{ url_for('index') }}">Deteksi</a></li>
+        <li><a href="{{ url_for('about') }}">About</a></li>
+        </ul>
+    </nav>
+    <div class="about-container">
+        <h1>Tentang Sistem Klasifikasi Kesehatan Mental</h1>
+
+        <div class="section">
+            <h2>Penjelasan Sistem</h2>
+            <p>
+                Sistem ini dirancang untuk mengklasifikasikan tingkat kesehatan mental mahasiswa berdasarkan 7 parameter utama: stres akademik, istirahat, motivasi, sosial, emosi, energi, dan tekanan. Sistem menggunakan metode logika fuzzy <strong>Tsukamoto</strong> untuk melakukan inferensi dan menghasilkan skor tingkat kesehatan mental.
+            </p>
+        </div>
+
+        <div class="section">
+            <h2>Cara Kerja Sistem</h2>
+            <ol class="steps">
+                <li>Pengguna mengisi kuesioner 7 pertanyaan sesuai kondisi masing-masing.</li>
+                <li>Setiap jawaban dikonversi ke derajat keanggotaan fuzzy (contoh: "rendah", "tinggi").</li>
+                <li>Sistem menjalankan 128 aturan fuzzy menggunakan metode Tsukamoto (karena 2⁷ kombinasi).</li>
+                <li>Setiap aturan menghasilkan nilai α dan z.</li>
+                <li>Sistem melakukan defuzzifikasi menggunakan metode rata-rata tertimbang dari semua aturan.</li>
+                <li>Skor akhir diklasifikasikan ke dalam 4 kategori: Sangat Sehat, Cenderung Sehat, Cenderung Buruk, atau Risiko Tinggi.</li>
+            </ol>
+        </div>
+        <div class="section">
+            <h2>Daftar Aturan Fuzzy (128 Aturan)</h2>
+            <p>Setiap aturan dihasilkan berdasarkan kombinasi 7 input: stres, istirahat, motivasi, sosial, emosi, energi, dan tekanan.</p>
+            <div style="max-height: 400px; overflow-y: scroll; padding: 1rem; font-family: monospace; font-size: 14px;">
+                <ol>
+                    {% for r in rules %}
+                        <li>
+                            IF Stres = {{ r.stres }} AND
+                            Istirahat = {{ r.istirahat }} AND
+                            Motivasi = {{ r.motivasi }} AND
+                            Sosial = {{ r.sosial }} AND
+                            Emosi = {{ r.emosi }} AND
+                            Energi = {{ r.energi }} AND
+                            Tekanan = {{ r.tekanan }}
+                            THEN Output: (sesuai inferensi)
+                        </li>
+                    {% endfor %}
+                </ol>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Grafik Himpunan Fuzzy</h2>
+            <p>Berikut adalah grafik himpunan fuzzy untuk seluruh variabel:</p>
+            <div class="grafik-container">
+                <div class="grafik-item">
+                    <h3>Stres Akademik</h3>
+                    <img src="{{ url_for('static', filename='assets/stres_akademik.png') }}" alt="Grafik Stres Akademik" style="width: 400px; height: auto;">
+                </div>
+                <div class="grafik-item">
+                    <h3>Istirahat</h3>
+                    <img src="{{ url_for('static', filename='assets/istirahat.png') }}" alt="Grafik Istirahat" style="width: 400px; height: auto;">
+                </div>
+                <div class="grafik-item">
+                    <h3>Motivasi</h3>
+                    <img src="{{ url_for('static', filename='assets/motivasi.png') }}" alt="Grafik Motivasi" style="width: 400px; height: auto;">
+
+                </div>
+                <div class="grafik-item">
+                    <h3>Sosial</h3>
+                    <img src="{{ url_for('static', filename='assets/sosial.png') }}" alt="Grafik Sosial" style="width: 400px; height: auto;">
+
+                </div>
+                <div class="grafik-item">
+                    <h3>Emosi</h3>
+                    <img src="{{ url_for('static', filename='assets/emosi.png') }}" alt="Grafik Emosi" style="width: 400px; height: auto;">
+
+                </div>
+                <div class="grafik-item">
+                    <h3>Energi</h3>
+                    <img src="{{ url_for('static', filename='assets/energi.png') }}" alt="Grafik Energi" style="width: 400px; height: auto;">
+
+                </div>
+                <div class="grafik-item">
+                    <h3>Tekanan</h3>
+                    <img src="{{ url_for('static', filename='assets/tekanan.png') }}" alt="Grafik Tekanan" style="width: 400px; height: auto;">
+
+                </div>
+                <div class="grafik-item">
+                    <h3>Kesehatan Mental</h3>
+                    <img src="{{ url_for('static', filename='assets/output.png') }}" alt="Grafik Kesehatan Mental" style="width: 400px; height: auto;">
+
+                </div>
+                <!-- Tambahkan grafik lain di sini nanti -->
+            </div>
+        </div>
+    </div>
+</body>
+</html>
